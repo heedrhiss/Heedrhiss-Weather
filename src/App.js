@@ -36,9 +36,12 @@ function formatDay(dateStr) {
 function App() {
   const [location, setLocation] = useState('Lisbon');
   const [weather, setWeather] = useState({});
+  const [flag, setFlag] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-
+useEffect(function(){
   async function getWeather(location) {
+    setIsLoading(true)
     try {
       const geoRes = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${location}`
@@ -50,8 +53,8 @@ function App() {
   
       const { latitude, longitude, timezone, name, country_code } =
         geoData.results.at(0);
-      console.log(`${name} ${convertToFlag(country_code)}`);
-  
+        setFlag(`${name} ${convertToFlag(country_code)}`);
+    
       //Getting actual weather
       const weatherRes = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&timezone=${timezone}&daily=weathercode,temperature_2m_max,temperature_2m_min`
@@ -61,20 +64,25 @@ function App() {
       console.log(weather);
     } catch (err) {
       console.error(err);
+    }finally{
+      setIsLoading(false)
     }
-  };
+  } if(location.length < 3) return setWeather({});
+   getWeather(location)
+},[location])
 
   return (
     <div className="app">
     <h1>Heedrhiss Weather</h1>
     <input type="text" value={location} onChange={(e)=>setLocation(e.target.value)} placeholder="Enter a location"/>
-    <button onClick={()=>getWeather(location)}>Get Weather</button>
-    {weather.time && <Weather weather={weather} location={location}/>}
+    {/* <button onClick={()=>getWeather(location)}>Get Weather</button> */}
+    {isLoading && <p className="loader">Loading weather...!</p>}
+    {weather.time && !isLoading && <Weather weather={weather} flag={flag} location={location}/>}
     </div>
   );
 }
 
-function Weather({weather, location}){
+function Weather({weather, flag}){
   const {
     temperature_2m_min: min,
     temperature_2m_max: max,
@@ -84,7 +92,7 @@ function Weather({weather, location}){
   
   console.log(weather)
   return(
-    <div> <h2>{location}</h2>
+    <div> <h2>{flag}</h2>
     <ul className="weather">
     {date.map((date, i)=> 
     <Day min={min[i]} max={max[i]} code={codes[i]} date={date} key={date} today={i=== 0}/>
