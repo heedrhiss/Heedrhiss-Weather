@@ -106,7 +106,7 @@ function Day({min, max, code, date, today}){
  return <li className="day">
   <p>{getWeatherIcon(code)}</p>
   <p>{today ? "Today" : formatDay(date)}</p>
-  <p>{Math.floor(min)}&deg; &mdash; {Math.ceil(max)}&deg;</p>
+  <p>{Math.floor(min)}&deg; &mdash; <strong>{Math.ceil(max)}&deg;</strong></p>
   </li>
 }
 export default App;
